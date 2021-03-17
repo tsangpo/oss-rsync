@@ -20,14 +20,14 @@ const args = process.argv.slice(2);
 if (args.length == 2) {
   const src = args[0];
   let options: Config;
-  if (src.startsWith("oss://")) {
+  if (src.startsWith("http://") || src.startsWith("https://")) {
     const url = new URL(args[0]);
-    // 'oss://accessKeyId:accessKeySecret@region/bucket'
+    const [bucket, region] = url.host.split(".");
     options = {
-      region: url.host,
       accessKeyId: url.username,
       accessKeySecret: url.password,
-      bucket: url.pathname.substr(1),
+      bucket,
+      region,
     };
   } else {
     options = JSON.parse(fs.readFileSync(src, "utf8"));
@@ -40,7 +40,7 @@ if (args.length == 2) {
   console.log(`oss-rsync - sync local files to oss
 Usage: oss-rsync src(file|url) dir
 
-src: json file path or a url like 'oss://accessKeyId:accessKeySecret@region/bucket'
+src: json file path or a url like 'http://accessKeyId:accessKeySecret@bucket.region.aliyuncs.com'
 dir: local dir will upload to oss
 
 json file format:

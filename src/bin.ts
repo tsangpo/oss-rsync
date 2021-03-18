@@ -18,9 +18,9 @@ interface Config {
 const args = process.argv.slice(2);
 
 if (args.length == 2) {
-  const src = args[0];
+  const [dir, remote] = args;
   let options: Config;
-  if (src.startsWith("http://") || src.startsWith("https://")) {
+  if (remote.startsWith("http://") || remote.startsWith("https://")) {
     const url = new URL(args[0]);
     const [bucket, region] = url.host.split(".");
     options = {
@@ -30,18 +30,17 @@ if (args.length == 2) {
       region,
     };
   } else {
-    options = JSON.parse(fs.readFileSync(src, "utf8"));
+    options = JSON.parse(fs.readFileSync(remote, "utf8"));
   }
 
-  const dir = args[1];
   let client = new OSSClient(options);
   client.sync(dir);
 } else {
   console.log(`oss-rsync - sync local files to oss
-Usage: oss-rsync src(file|url) dir
+Usage: oss-rsync $from_local_dir $remote_url_or_config_file
 
-src: json file path or a url like 'http://accessKeyId:accessKeySecret@bucket.region.aliyuncs.com'
-dir: local dir will upload to oss
+$from_local_dir: local dir will upload to oss
+$remote_url_or_config_file: json file path or a url like 'http://accessKeyId:accessKeySecret@bucket.region.aliyuncs.com'
 
 json file format:
 {

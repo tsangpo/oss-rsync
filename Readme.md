@@ -1,22 +1,27 @@
 # oss-rsync
 
 ## About
+
 A command line tool/lib for sync local files to remote aliyun oss.
 
 ## Install
+
 ```bash
   npm i oss-rsync
 ```
 
 ## Usage
+
 ```bash
-  oss-rsync $from_local_dir $remote_url_or_config_file
+  oss-rsync $from_local_dir $remote_url_or_config_file [$remote_prefix]
 ```
 
 - $from_local_dir: local dir will upload to oss
 - $remote_url_or_config_file: json file path or a url like 'http://accessKeyId:accessKeySecret@bucket.region.aliyuncs.com'
+- $remote_prefix: prefix of bucket
 
 json file format:
+
 ```ts
 {
   /** access secret you create */

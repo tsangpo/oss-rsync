@@ -17,8 +17,8 @@ interface Config {
 
 const args = process.argv.slice(2);
 
-if (args.length == 2) {
-  const [dir, remote] = args;
+if (args.length == 2 || args.length == 3) {
+  const [dir, remote, prefix] = args;
   let options: Config;
   if (remote.startsWith("http://") || remote.startsWith("https://")) {
     const url = new URL(args[0]);
@@ -34,13 +34,14 @@ if (args.length == 2) {
   }
 
   let client = new OSSClient(options);
-  client.sync(dir);
+  client.sync(dir, prefix);
 } else {
   console.log(`oss-rsync - sync local files to oss
-Usage: oss-rsync $from_local_dir $remote_url_or_config_file
+Usage: oss-rsync $from_local_dir $remote_url_or_config_file [$remote_prefix]
 
 $from_local_dir: local dir will upload to oss
 $remote_url_or_config_file: json file path or a url like 'http://accessKeyId:accessKeySecret@bucket.region.aliyuncs.com'
+$remote_prefix: prefix of bucket
 
 json file format:
 {

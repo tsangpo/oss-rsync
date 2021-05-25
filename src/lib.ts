@@ -26,13 +26,14 @@ export class OSSClient {
     this.oss = new OSS(options);
   }
 
-  async list() {
+  async list(prefix = "") {
     let continuationToken = null;
     const maxKeys = 1000;
     let files: IObjectInfo[] = [];
     do {
       //@ts-ignore
       const result = await this.oss.listV2({
+        prefix,
         "continuation-token": continuationToken,
         "max-keys": maxKeys,
       });
@@ -55,8 +56,16 @@ export class OSSClient {
   }
 
   // TODO: add delete option
-  async sync(rootDir: string) {
-    const rfilesL = await this.list();
+  async sync(rootDir: string, prefix = "") {
+    while (prefix.startsWith("/")) {
+      prefix = prefix.substr(1);
+    }
+    if (prefix.length > 0 && !prefix.endsWith("/")) {
+      prefix += "/";
+    }
+
+    // remote file list
+    const rfilesL = await this.list(prefix);
     //   console.log(rfilesL);
 
     const rfiles = {} as { [key: string]: IObjectInfo };
@@ -69,25 +78,27 @@ export class OSSClient {
     //   console.log(lfiles);
 
     for (const f of lfiles) {
-      const lfp = path.join(rootDir, f.name);
-      const r = rfiles[f.name];
+      const localPath = path.join(rootDir, f.name);
+      const remotePath = prefix + f.name;
+
+      const r = rfiles[remotePath];
       if (r && r.size == f.size) {
         if (r.lastModifiedTime >= f.mtime) {
           // skip, size and mtime match
-          console.log("skip:", f.name);
+          console.log("skip:", remotePath);
           continue;
         }
         // check md5
-        const fmd5 = md5(fs.readFileSync(lfp)).toUpperCase();
+        const fmd5 = md5(fs.readFileSync(localPath)).toUpperCase();
         if (r.etag.indexOf(fmd5) > -1) {
           // skip, md5 match
-          console.log("skip:", f.name);
+          console.log("skip:", remotePath);
           continue;
         }
       }
       // upload
-      console.log("update:", f.name);
-      await this.oss.put(f.name, lfp);
+      console.log("update:", remotePath);
+      await this.oss.put(remotePath, localPath);
     }
   }
 }

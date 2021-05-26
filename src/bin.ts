@@ -21,7 +21,7 @@ if (args.length == 2 || args.length == 3) {
   const [dir, remote, prefix] = args;
   let options: Config;
   if (remote.startsWith("http://") || remote.startsWith("https://")) {
-    const url = new URL(args[0]);
+    const url = new URL(remote);
     const [bucket, region] = url.host.split(".");
     options = {
       accessKeyId: url.username,

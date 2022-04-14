@@ -1,7 +1,7 @@
 
 
 build:
-	npx tsc
+	pnpx tsc
 
 publish: build
 	#npm adduser
